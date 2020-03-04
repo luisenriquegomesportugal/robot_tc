@@ -4,7 +4,7 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon --ignore 'pdfs/*.pdf' index.js "
+    "start": "node index.js"
   },
   "dependencies": {
     "axios": "^0.19.2",
