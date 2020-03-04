@@ -4,14 +4,13 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "dev": "nodemon index.js "
+    "dev": "nodemon --ignore 'pdfs/*.pdf' index.js "
   },
   "dependencies": {
     "axios": "^0.19.2",
-    "blob-util": "^2.0.2",
     "cheerio": "^1.0.0-rc.3",
     "express": "^4.17.1",
-    "node-blob": "^0.0.2",
+    "form-data": "^3.0.0",
     "nodemon": "^2.0.2",
     "server": "^1.0.27"
   }

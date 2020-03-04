@@ -1,0 +1,34 @@
+Request URL: https://www.pdftohtml.net/upload.instant.php
+Request Method: POST
+Status Code: 200 OK
+Remote Address: 64.237.54.67:443
+Referrer Policy: unsafe-url
+
+
+Connection: Keep-Alive
+Content-Type: application/json
+Date: Wed, 04 Mar 2020 10:28:29 GMT
+Keep-Alive: timeout=5, max=100
+Server: Apache/2.4.41 (IUS) OpenSSL/1.0.1e-fips
+Transfer-Encoding: chunked
+X-Content-Type-Options: nosniff
+X-Powered-By: PHP/7.2.26
+
+
+Accept: */*
+Accept-Encoding: gzip, deflate, br
+Accept-Language: en-US,en;q=0.9,pt;q=0.8,zh-CN;q=0.7,zh;q=0.6,und;q=0.5
+Connection: keep-alive
+Content-Length: 171201
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryowARlCjtZsPVuKcl
+Cookie: _ga=GA1.2.121402742.1583317296; _gid=GA1.2.112257638.1583317296; G_ENABLED_IDPS=google; __atuvc=2%7C10; __atuvs=5e5f812f15b330b4001; __atssc=google%3B2
+Host: www.pdftohtml.net
+Origin: https://www.pdftohtml.net
+Referer: https://www.pdftohtml.net/
+Sec-Fetch-Dest: empty
+Sec-Fetch-Mode: cors
+Sec-Fetch-Site: same-origin
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/80.0.3987.122 Safari/537.36
+X-Requested-With: XMLHttpRequest
+
+{"status":"1","jobId":"e6330602-5e02-11ea-8b25-0cc47a792c0a"}
