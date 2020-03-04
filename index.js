@@ -19,7 +19,7 @@ const Utils = require("./utils");
     /* ---------------------------------------------------------*/
     /* ---------------------------------------------------------*/
     /* ---------------------------------------------------------*/
-    console.log("2. download diario oficial file");
+    console.log("2. downloading diario oficial file");
     const { data: diarioContents } = await axios.get(
       "https://drive.google.com/u/0/uc",
       {
@@ -87,7 +87,7 @@ const Utils = require("./utils");
         throw "error: cannot convert the diario oficial file";
       }
 
-      await new Promise(res => setTimeout(res, 5000));
+      await Utils.wait(5);
     } while (conversionStatusResponse.data.status === "converting");
 
     /* ---------------------------------------------------------*/
