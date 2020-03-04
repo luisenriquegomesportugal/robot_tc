@@ -1,97 +1,129 @@
-const express = require("express");
 const axios = require("axios");
-const cheerio = require("cheerio");
-const FormData = require('form-data')
-const fs = require('fs');
-const path = require('path');
+const FormData = require("form-data");
+const Utils = require("./utils");
 
-const app = express();
+(async function() {
+  try {
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log("1. accessing diario oficial");
+    const portal = await axios.get("https://www.ioepa.com.br/Frame");
+    const diario = Utils.searchInHTML("div#quadro div#mid a", portal.data);
+    const diarioUrl = new URL(diario.attr("href"));
 
-app.get("/", async function (req, res) {
-  console.log("Acessando IOEPA");
-  const ioepa = await axios.get("https://www.ioepa.com.br/Frame");
-
-  console.log("Acessando DOM IOEPA");
-  const ioepaSelector = cheerio.load(ioepa.data);
-  const diarioHref = ioepaSelector("div#quadro div#mid a").attr("href");
-
-  console.log("Buscando Arquivo IOEPA");
-  const diarioUrl = new URL(diarioHref);
-  const diarioParams = new URLSearchParams(diarioUrl.search);
-
-  console.log("Baixando Arquivo IOEPA");
-  const ioepaResponse = await axios.get(
-    "https://drive.google.com/u/0/uc",
-    {
-      responseType: 'arraybuffer',
-      headers: {
-        'Content-Type': 'application/pdf',
-      },
-      params: {
-        id: diarioParams.get('id'),
-        export: "download"
-      }
+    if (!diarioUrl) {
+      throw "error: cannot access diario oficial";
     }
-  );
 
-  console.log("Retornando Arquivo IOEPA");
-  const now = new Date().toLocaleString().replace(/[\/:]+/g, '.');
-  const pathDir = path.resolve(__dirname, "files", now);
-
-  if (!fs.existsSync(pathDir)) {
-    fs.mkdirSync(pathDir);
-  }
-
-  const pdfPathname = path.resolve(pathDir, now + ".pdf");
-  fs.writeFileSync(pdfPathname, ioepaResponse.data);
-
-
-  console.log("Enviando para Converter");
-  const formDataConverter = new FormData();
-  formDataConverter.append('Filedata', pdfPathname);
-
-  const converterResponse = await axios.post(
-    'https://www.pdftohtml.net/upload.instant.php',
-    formDataConverter,
-    {
-      timeout: 180000,
-      headers: {
-        'Referer': 'https://www.pdftohtml.net/',
-        'Content-Length': ioepaResponse.data.length,
-        ...formDataConverter.getHeaders()
-      }
-    }
-  );
-
-  return res.json(converterResponse.data);
-  /*
-    do {
-      console.log("Convertendo Arquivo IOEPA HTML");
-      let statusConverterResponse = await axios.get(
-        "https://www.pdftohtml.net/getIsConverted.php",
-        {
-          params: {
-            jobId: converterResponse.data.jobId,
-            rand: (Math.random() * 10).toFixed(0)
-          }
-        }
-      );
-    } while (statusConverterResponse.data.status === "converting");
-  
-    console.log("Baixando Arquivo IOEPA HTML");
-    let resultConverterResponse = await axios.get(
-      "https://www.pdftohtml.net/" + statusConverterResponse.data.download_url,
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log("2. download diario oficial file");
+    const { data: diarioContents } = await axios.get(
+      "https://drive.google.com/u/0/uc",
       {
-        responseType: 'arraybuffer',
+        responseType: "arraybuffer",
         headers: {
-          'Content-Type': 'application/zip',
+          "Content-Type": "application/pdf"
+        },
+        params: {
+          id: diarioUrl.searchParams.get("id"),
+          export: "download"
         }
       }
     );
-  
-    const zipPathname = path.resolve(pathDir, now + ".zip");
-    fs.writeFileSync(zipPathname, resultConverterResponse.data);
-    */
-});
 
-app.listen(3000, () => console.log("Is running!"));
+    if (!diarioContents) {
+      throw "error: download diario oficial file";
+    }
+
+    Utils.saveFile(Utils.path("pdf"), diarioContents);
+
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log("3. uploading the diario oficial file for conversion");
+    const conversionFormData = new FormData();
+    conversionFormData.append("Filedata", diarioContents, Utils.path("pdf"));
+
+    const { data: conversionUpload } = await axios.post(
+      "https://www.pdftohtml.net/upload.instant.php",
+      conversionFormData,
+      {
+        timeout: 120000,
+        headers: {
+          Referer: "https://www.pdftohtml.net/",
+          "Content-Length": conversionFormData.getLengthSync(),
+          ...conversionFormData.getHeaders()
+        }
+      }
+    );
+
+    if (!conversionUpload) {
+      throw "error: cannot upload the diario oficial file for conversion";
+    }
+
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    let conversionStatusResponse;
+    let conversionStatusCounter = 0;
+    do {
+      console.log(
+        `4. converting the diario oficial file (${conversionStatusCounter})`
+      );
+      conversionStatusResponse = await axios.get(
+        "https://www.pdftohtml.net/getIsConverted.php",
+        {
+          params: {
+            jobId: conversionUpload.jobId,
+            rand: conversionStatusCounter++
+          }
+        }
+      );
+
+      if (!conversionStatusResponse.data) {
+        throw "error: cannot convert the diario oficial file";
+      }
+
+      await new Promise(res => setTimeout(res, 5000));
+    } while (conversionStatusResponse.data.status === "converting");
+
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log("5. downloading converted diario oficial file");
+    let { data: diarioConvertedContents } = await axios.get(
+      "https://www.pdftohtml.net/fetch.php",
+      {
+        responseType: "arraybuffer",
+        headers: {
+          "Content-Type": "application/zip"
+        },
+        params: {
+          id: conversionUpload.jobId
+        }
+      }
+    );
+
+    if (!diarioConvertedContents) {
+      throw "error: cannot download converted diario oficial file";
+    }
+
+    Utils.saveFile(Utils.path("zip"), diarioConvertedContents);
+
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log("6. extracting converted diario oficial file");
+    Utils.extractFile(Utils.path("zip"), Utils.path());
+
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    /* ---------------------------------------------------------*/
+    console.log(`6. done! access ${Utils.path().replace(/\\/g, "/")}`);
+  } catch (err) {
+    console.error(err);
+  }
+})();
