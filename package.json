@@ -1,15 +1,17 @@
 {
   "name": "robot_tc",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "src/index.js",
   "license": "MIT",
   "scripts": {
-    "start": "node index.js"
+    "start": "node src/index.js"
   },
   "dependencies": {
     "axios": "^0.19.2",
     "cheerio": "^1.0.0-rc.3",
+    "dotenv": "^8.2.0",
     "extract-zip": "^1.6.7",
-    "form-data": "^3.0.0"
+    "form-data": "^3.0.0",
+    "kafkajs": "^1.12.0"
   }
 }
