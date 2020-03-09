@@ -17,7 +17,7 @@ module.exports = {
    * Attention: It get current time for name of partials files and folders
    */
   path: (ext = null, rootFilesDir = "files") => {
-    let pathDir = path.resolve(__dirname, "..", rootFilesDir);
+    let pathDir = path.resolve(__dirname, "..", "..", rootFilesDir);
     if (!fs.existsSync(pathDir)) fs.mkdirSync(pathDir);
 
     pathDir = path.resolve(pathDir, now);
