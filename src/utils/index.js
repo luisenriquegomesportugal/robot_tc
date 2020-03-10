@@ -1,4 +1,5 @@
 const fs = require("fs");
+const util = require("util");
 const path = require("path");
 const cheerio = require("cheerio");
 const extract = require("extract-zip");
@@ -16,7 +17,11 @@ module.exports = {
    * Return files directories, creating them if needs
    * Attention: It get current time for name of partials files and folders
    */
-  path: (ext = null, rootFilesDir = "files") => {
+  path: (ext = null, rootFilesDir = "tmp") => {
+    if (process.env.ROOT_FILES_PATH) {
+      rootFilesDir = process.env.ROOT_FILES_PATH;
+    }
+
     let pathDir = path.resolve(__dirname, "..", "..", rootFilesDir);
     if (!fs.existsSync(pathDir)) fs.mkdirSync(pathDir);
 
@@ -40,10 +45,13 @@ module.exports = {
   saveFile: (path, data) => fs.writeFileSync(path, data),
 
   /*
+   * Read file
+   */
+  readFile: path => fs.readFileSync(path),
+
+  /*
    * Extract ZIP file
    */
-  extractFile: (source, dest) =>
-    extract(source, { dir: dest }, err => {
-      if (err) throw err;
-    })
+  extractFile: async (source, dest) =>
+    await util.promisify(extract)(source, { dir: dest })
 };
