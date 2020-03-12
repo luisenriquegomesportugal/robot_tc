@@ -33,6 +33,8 @@ app.get("/run", async function(req, res) {
       "https://drive.google.com/u/0/uc",
       {
         responseType: "arraybuffer",
+        maxContentLength: 100000000,
+        maxBodyLength: 1000000000,
         headers: {
           "Content-Type": "application/pdf"
         },
@@ -61,6 +63,8 @@ app.get("/run", async function(req, res) {
       conversionFormData,
       {
         timeout: 120000,
+        maxContentLength: 100000000,
+        maxBodyLength: 1000000000,
         headers: {
           Referer: "https://www.pdftohtml.net/",
           "Content-Length": conversionFormData.getLengthSync(),
@@ -107,6 +111,8 @@ app.get("/run", async function(req, res) {
       "https://www.pdftohtml.net/fetch.php",
       {
         responseType: "arraybuffer",
+        maxContentLength: 100000000,
+        maxBodyLength: 1000000000,
         headers: {
           "Content-Type": "application/zip"
         },
@@ -154,6 +160,8 @@ app.get("/run", async function(req, res) {
       uploadConversionFormData,
       {
         timeout: 120000,
+        maxContentLength: 100000000,
+        maxBodyLength: 1000000000,
         headers: {
           "Content-Length": uploadConversionFormData.getLengthSync(),
           ...uploadConversionFormData.getHeaders()
@@ -183,6 +191,10 @@ app.get("/run", async function(req, res) {
     });
   }
 });
+
+if(!process.env.SOURCE_PORT || !process.env.SOURCE_HOST){
+  throw "error: cannot find SOURCE_PORT or SOURCE_HOST variable";
+}
 
 app.listen(process.env.SOURCE_PORT, process.env.SOURCE_HOST, () =>
   console.log(
